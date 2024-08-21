@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mysqldb:
+    image: mysql:8.0.39
+    container_name: mysqldb
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: TestingSystem
+    ports:
+      - "3307:3306"
+    networks:
+      - app-network
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+  app:
+    image: spring-boot-app:1.0
+    container_name: app-container
+    build:
+      context: .
+      dockerfile: Dockerfile  
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/TestingSystem
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+    depends_on:
+      - mysqldb
+    ports:
+      - "8081:8080"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
